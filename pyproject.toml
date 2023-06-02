@@ -1,3 +1,34 @@
 [build-system]
-# Minimum requirements for setup.py to execute.
-requires = ["setuptools", "wheel"] 
+requires = ["setuptools"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "notctyparser" 
+version = "23.6.2"
+description = "Just ctyparser with added version check."
+readme = "README.md"
+requires-python = ">=3.9"
+authors = [
+  { name="Michael Bridak", email="michael.bridak@gmail.com" },
+]
+dependencies = [
+    "feedparser",
+    "requests",
+]
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "Development Status :: 5 - Production/Stable",
+    "License :: OSI Approved :: MIT License",
+    "Environment :: X11 Applications :: Qt",
+    "Operating System :: POSIX :: Linux",
+    "Intended Audience :: Developers",
+    "Natural Language :: English",
+    "Topic :: Communications :: Ham Radio",
+]
+
+[project.urls]
+"Homepage" = "https://github.com/mbridak/ctyparser"
+"Bug Tracker" = "https://github.com/mbridak/ctyparser/issues"
+
+[tool.setuptools.packages.find]
+where = ["."]

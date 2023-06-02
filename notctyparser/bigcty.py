@@ -7,28 +7,27 @@ Released under the terms of the MIT license.
 """
 
 
-import json
-import tempfile
-import zipfile
-import pathlib
-import re
-import os
 import collections
 import copy
+import json
+import os
+import pathlib
+import re
+import tempfile
+import zipfile
 from datetime import datetime
-
-import requests
-import feedparser
-
 from typing import Union
 
+import feedparser
+import requests
 
-default_feed = "http://www.country-files.com/category/big-cty/feed/"
+DEFAULT_FEED = "http://www.country-files.com/category/big-cty/feed/"
 
 
 class BigCty(collections.abc.Mapping):
     """Class representing a BigCTY dataset.
-    Can be initialised with data by passing the path to a valid ``cty.json`` file to the constructor.
+    Can be initialised with data by passing the path to a valid ``cty.json`` file
+    to the constructor.
 
     :param file_path: Location of the ``cty.json`` file to load.
     :type file_path: str or os.PathLike, optional
@@ -36,9 +35,11 @@ class BigCty(collections.abc.Mapping):
     :var version: the datestamp of the data, ``YYYYMMDD`` format.
     :vartype version: str
     """
+
     regex_version_entry = re.compile(r"VER(\d{8})")
-    regex_feed_date = re.compile(r'(\d{2}-\w+-\d{4})')
-    regex_dat = re.compile(r"""=?(?P<prefix>[a-zA-Z0-9/]+)
+    regex_feed_date = re.compile(r"(\d{2}-\w+-\d{4})")
+    regex_dat = re.compile(
+        r"""=?(?P<prefix>[a-zA-Z0-9/]+)
                                  (?:\((?P<cq>\d+)\))?
                                  (?:\[(?P<itu>\d+)\])?
                                  (?P<latlong>
@@ -47,7 +48,9 @@ class BigCty(collections.abc.Mapping):
                                      (?P<long>[+-]?\d+(?:.\d+)?)>
                                  )?
                                  (?:\{(?P<continent>\w+)\})?
-                                 (?:~(?P<tz>[+-]?\d+(?:\.\d+)?)~)?""", re.X)
+                                 (?:~(?P<tz>[+-]?\d+(?:\.\d+)?)~)?""",
+        re.X,
+    )
 
     def __init__(self, file_path: Union[str, os.PathLike, None] = None):
         self._data: dict = {}
@@ -99,32 +102,41 @@ class BigCty(collections.abc.Mapping):
             file.seek(0)
 
             # stores the previous prefix for the next iteration
-            last = ''
-            
+            last = ""
+
             while True:
-                line = file.readline().rstrip('\r').strip(':')  # remove unnecessary carriage returns and colons
+                line = (
+                    file.readline().rstrip("\r").strip(":")
+                )  # remove unnecessary carriage returns and colons
                 if not line:
                     break
                 # check if the line introduces new DXCC
-                if line != '' and line[0].isalpha():
+                if line != "" and line[0].isalpha():
                     # split line into fields at delimiters
-                    segments = [x.strip() for x in line.split(':')]
+                    segments = [x.strip() for x in line.split(":")]
                     # check if this entity is not a DXCC
-                    if segments[7][0] == '*':
+                    if segments[7][0] == "*":
                         segments[7] = segments[7][1:]
-                        segments[0] += ' (not DXCC)'
-                    cty_dict[segments[7]] = {'entity': segments[0], 'cq': int(segments[1]),
-                                             'itu': int(segments[2]), 'continent': segments[3],
-                                             'lat': float(segments[4]), 'long': float(segments[5]),
-                                             'tz': -1*float(segments[6]), 'len': len(segments[7]),
-                                             'primary_pfx': segments[7], 'exact_match': False}
+                        segments[0] += " (not DXCC)"
+                    cty_dict[segments[7]] = {
+                        "entity": segments[0],
+                        "cq": int(segments[1]),
+                        "itu": int(segments[2]),
+                        "continent": segments[3],
+                        "lat": float(segments[4]),
+                        "long": float(segments[5]),
+                        "tz": -1 * float(segments[6]),
+                        "len": len(segments[7]),
+                        "primary_pfx": segments[7],
+                        "exact_match": False,
+                    }
                     # store the current prefix for the next iteration
                     last = segments[7]
 
                 # check if the line continues a DXCC
-                elif line != '' and line[0].isspace():
-                    overrides = line.strip().rstrip(';').rstrip(',').split(',')
-                    
+                elif line != "" and line[0].isspace():
+                    overrides = line.strip().rstrip(";").rstrip(",").split(",")
+
                     for item in overrides:
                         if item not in cty_dict.keys():
                             # get the already stored data from primary prefix
@@ -134,21 +146,41 @@ class BigCty(collections.abc.Mapping):
                             if match is None:
                                 continue
                             if match.group("itu"):
-                                data['itu'] = int(match.group("itu"))
+                                data["itu"] = int(match.group("itu"))
                             if match.group("cq"):
-                                data['cq'] = int(match.group("cq"))
+                                data["cq"] = int(match.group("cq"))
                             if match.group("latlong"):
-                                data['lat'] = float(match.group("lat"))
-                                data['long'] = float(match.group("long"))
+                                data["lat"] = float(match.group("lat"))
+                                data["long"] = float(match.group("long"))
                             if match.group("continent"):
-                                data['continent'] = match.group("continent")
+                                data["continent"] = match.group("continent")
                             if match.group("tz"):
-                                data['tz'] = -1 * float(match.group("tz"))
-                            if item.startswith('='):
-                                data['exact_match'] = True
+                                data["tz"] = -1 * float(match.group("tz"))
+                            if item.startswith("="):
+                                data["exact_match"] = True
                             prefix = match.group("prefix")
                             cty_dict[prefix] = data
         self._data = cty_dict
+
+    def check_update(self) -> bool:
+        """doc"""
+        with requests.Session() as session:
+            feed = session.get(DEFAULT_FEED)
+            parsed_feed = feedparser.parse(feed.content)
+            update_url = parsed_feed.entries[0]["link"]
+            date_match = re.search(self.regex_feed_date, update_url)
+            if date_match is None:
+                raise Exception(
+                    "Error parsing feed: date missing"
+                )  # TODO: Better exception
+            date_str = date_match.group(1).title()
+            update_date = datetime.strftime(
+                datetime.strptime(date_str, "%d-%B-%Y"), "%Y%m%d"
+            )
+
+            if self._version == update_date:
+                return False
+            return True
 
     def update(self) -> bool:
         """Upates the instance's data from the feed.
@@ -158,30 +190,38 @@ class BigCty(collections.abc.Mapping):
         :rtype: bool
         """
         with requests.Session() as session:
-            feed = session.get(default_feed)
+            feed = session.get(DEFAULT_FEED)
             parsed_feed = feedparser.parse(feed.content)
-            update_url = parsed_feed.entries[0]['link']
+            update_url = parsed_feed.entries[0]["link"]
             date_match = re.search(self.regex_feed_date, update_url)
             if date_match is None:
-                raise Exception("Error parsing feed: date missing")  # TODO: Better exception
+                raise Exception(
+                    "Error parsing feed: date missing"
+                )  # TODO: Better exception
             date_str = date_match.group(1).title()
-            update_date = datetime.strftime(datetime.strptime(date_str, '%d-%B-%Y'), '%Y%m%d')
+            update_date = datetime.strftime(
+                datetime.strptime(date_str, "%d-%B-%Y"), "%Y%m%d"
+            )
 
             if self._version == update_date:
                 return False
 
             with tempfile.TemporaryDirectory() as temp:
                 path = pathlib.PurePath(temp)
-                dl_url = f'http://www.country-files.com/bigcty/download/{update_date[:4]}/bigcty-{update_date}.zip'  # TODO: Issue #10
-                rq = session.get(dl_url)
-                if rq.status_code == 404:
-                    dl_url = f'http://www.country-files.com/bigcty/download/bigcty-{update_date}.zip'
-                    rq = session.get(dl_url)
-                    if rq.status_code != 200:
-                        raise Exception(f"Unable to find and download bigcty-{update_date}.zip")
-                with open(path / 'cty.zip', 'wb+') as file:
-                    file.write(rq.content)
-                    zipfile.ZipFile(file).extract('cty.dat', path=str(path))  # Force cast as str because mypy
+                dl_url = f"http://www.country-files.com/bigcty/download/{update_date[:4]}/bigcty-{update_date}.zip"  # TODO: Issue #10
+                the_request = session.get(dl_url)
+                if the_request.status_code == 404:
+                    dl_url = f"http://www.country-files.com/bigcty/download/bigcty-{update_date}.zip"
+                    the_request = session.get(dl_url)
+                    if the_request.status_code != 200:
+                        raise Exception(
+                            f"Unable to find and download bigcty-{update_date}.zip"
+                        )
+                with open(path / "cty.zip", "wb+") as file:
+                    file.write(the_request.content)
+                    zipfile.ZipFile(file).extract(
+                        "cty.dat", path=str(path)
+                    )  # Force cast as str because mypy
                 self.import_dat(path / "cty.dat")
         return True
 
@@ -223,5 +263,7 @@ class BigCty(collections.abc.Mapping):
 
     # repr(): Class name, instance ID, and last_updated
     def __repr__(self):
-        return (f'<{type(self).__module__}.{type(self).__qualname__} object'
-                f'at {hex(id(self))}, last_updated={self.last_updated}>')
+        return (
+            f"<{type(self).__module__}.{type(self).__qualname__} object"
+            f"at {hex(id(self))}, last_updated={self.last_updated}>"
+        )

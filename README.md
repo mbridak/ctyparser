@@ -1,22 +1,28 @@
-# ctyparser
+# notctyparser
+
+notctyparser is a fork and extension of [ctyparser](https://github.com/miaowware/ctyparser).
+
+I've probably screwed something up. Use the original.
 
 A CTY.DAT parser for modern amateur radio programs.
 
-Support: [![Discord](https://discordapp.com/api/guilds/656888365886734340/widget.png?style=shield)](https://discord.gg/SwyjdDN)
-
-[![PyPI](https://img.shields.io/pypi/v/ctyparser)](https://pypi.org/project/ctyparser/) ![PyPI - Python Version](https://img.shields.io/pypi/pyversions/ctyparser) ![PyPI - License](https://img.shields.io/pypi/l/ctyparser) [![Documentation Status](https://readthedocs.org/projects/ctyparser/badge/?version=latest)](https://ctyparser.readthedocs.io/en/latest/?badge=latest)
+[![PyPI](https://img.shields.io/pypi/v/notctyparser)](https://pypi.org/project/notctyparser/) ![PyPI - Python Version](https://img.shields.io/pypi/pyversions/notctyparser) ![PyPI - License](https://img.shields.io/pypi/l/notctyparser)
 
 ## Installation
 
-`ctyparser` requires Python 3.6 at minimum.
+`notctyparser` requires Python 3.6 at minimum.
 
 ```none
-$ pip install ctyparser
+pip install notctyparser
 ```
 
-## API and CLI Documentation
+## Fork
 
-Documentation is available on [ReadTheDocs](https://ctyparser.readthedocs.io/).
+I just added a stupid check for update without doing the update.
+
+```python
+def check_update(self) -> bool:
+```
 
 ## Copyright
 

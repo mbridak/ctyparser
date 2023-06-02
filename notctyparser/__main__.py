@@ -7,16 +7,16 @@ Released under the terms of the MIT license.
 """
 
 
-import ctyparser
 # import argparse
 import pathlib
 
+import notctyparser
 
 file = pathlib.PurePath("./cty.json")
 try:
-    cty = ctyparser.BigCty(file)
+    cty = notctyparser.BigCty(file)
 except FileNotFoundError:
-    cty = ctyparser.BigCty()
+    cty = notctyparser.BigCty()
 print("Updated:", cty.update())
 print("Datestamp:", cty.formatted_version)
 print("Version Entity:", cty.get("VERSION", "Not present, data possibly corrupted."))
