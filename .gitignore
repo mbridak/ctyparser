@@ -106,3 +106,4 @@ venv.bak/
 
 ## IDEe
 .vscode/
+publish.sh
