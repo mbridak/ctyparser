@@ -107,3 +107,4 @@ venv.bak/
 ## IDEe
 .vscode/
 publish.sh
+test.py
