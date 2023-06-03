@@ -67,7 +67,7 @@ class BigCty(collections.abc.Mapping):
         :return: None
         """
         cty_file = pathlib.Path(cty_file)
-        with cty_file.open("r") as file:
+        with cty_file.open("r", encoding="utf-8") as file:
             ctyjson = json.load(file)
             self._version = ctyjson.pop("version", None)
             self._data = ctyjson
@@ -82,7 +82,7 @@ class BigCty(collections.abc.Mapping):
         cty_file = pathlib.Path(cty_file)
         datadump = self._data.copy()
         datadump["version"] = self._version
-        with cty_file.open("w") as file:
+        with cty_file.open("w", encoding="utf-8") as file:
             json.dump(datadump, file)
 
     def import_dat(self, dat_file: Union[str, os.PathLike]) -> None:
@@ -93,7 +93,7 @@ class BigCty(collections.abc.Mapping):
         :return: None
         """
         dat_file = pathlib.Path(dat_file)
-        with dat_file.open("r") as file:
+        with dat_file.open("r", encoding="utf-8") as file:
             cty_dict = dict()
 
             # get the version from the file
@@ -138,7 +138,7 @@ class BigCty(collections.abc.Mapping):
                     overrides = line.strip().rstrip(";").rstrip(",").split(",")
 
                     for item in overrides:
-                        if item not in cty_dict.keys():
+                        if item not in cty_dict:
                             # get the already stored data from primary prefix
                             data = copy.deepcopy(cty_dict[last])
                             # apply regex to extract the prefix and overrides
@@ -209,10 +209,16 @@ class BigCty(collections.abc.Mapping):
 
             with tempfile.TemporaryDirectory() as temp:
                 path = pathlib.PurePath(temp)
-                dl_url = f"http://www.country-files.com/bigcty/download/{update_date[:4]}/bigcty-{update_date}.zip"  # TODO: Issue #10
+                dl_url = (
+                    "http://www.country-files.com/bigcty/download/"
+                    f"{update_date[:4]}/bigcty-{update_date}.zip"
+                )  # TODO: Issue #10
                 the_request = session.get(dl_url)
                 if the_request.status_code == 404:
-                    dl_url = f"http://www.country-files.com/bigcty/download/bigcty-{update_date}.zip"
+                    dl_url = (
+                        "http://www.country-files.com/bigcty/download/bigcty-"
+                        f"{update_date}.zip"
+                    )
                     the_request = session.get(dl_url)
                     if the_request.status_code != 200:
                         raise ResourceWarning(
