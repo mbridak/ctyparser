@@ -24,10 +24,10 @@ I just added a stupid check for update without doing the update.
 def check_update(self) -> bool:
 ```
 
-Used xpath to parse the download link.
-Chose more narrow raised exceptions.
-Specified utf-8 file encoding.
-Made the linter happy.
+- Used xpath to parse the download link.
+- Chose more narrow raised exceptions.
+- Specified utf-8 file encoding.
+- Made the linter happy.
 
 ## Copyright
 
