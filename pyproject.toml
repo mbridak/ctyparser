@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "notctyparser" 
-version = "23.6.2"
+version = "23.6.3"
 description = "Just ctyparser with added version check."
 readme = "README.md"
 requires-python = ">=3.9"
