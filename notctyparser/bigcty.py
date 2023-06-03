@@ -163,16 +163,18 @@ class BigCty(collections.abc.Mapping):
         self._data = cty_dict
 
     def check_update(self) -> bool:
-        """doc"""
+        """Checks if an update exists.
+        :raises AttributeError : If there is no date in the feed.
+        :return: ``True`` if an update is available, otherwise ``False``.
+        :rtype: bool
+        """
         with requests.Session() as session:
             feed = session.get(DEFAULT_FEED)
             parsed_feed = feedparser.parse(feed.content)
             update_url = parsed_feed.entries[0]["link"]
             date_match = re.search(self.regex_feed_date, update_url)
             if date_match is None:
-                raise Exception(
-                    "Error parsing feed: date missing"
-                )  # TODO: Better exception
+                raise AttributeError("Error parsing feed: date missing")
             date_str = date_match.group(1).title()
             update_date = datetime.strftime(
                 datetime.strptime(date_str, "%d-%B-%Y"), "%Y%m%d"
@@ -185,7 +187,8 @@ class BigCty(collections.abc.Mapping):
     def update(self) -> bool:
         """Upates the instance's data from the feed.
 
-        :raises Exception: If there is no date in the feed.
+        :raises AttributeError: If there is no date in the feed.
+        :raises ResourceWarning: If unable to download bigcty.
         :return: ``True`` if an update was done, otherwise ``False``.
         :rtype: bool
         """
@@ -195,9 +198,7 @@ class BigCty(collections.abc.Mapping):
             update_url = parsed_feed.entries[0]["link"]
             date_match = re.search(self.regex_feed_date, update_url)
             if date_match is None:
-                raise Exception(
-                    "Error parsing feed: date missing"
-                )  # TODO: Better exception
+                raise AttributeError("Error parsing feed: date missing")
             date_str = date_match.group(1).title()
             update_date = datetime.strftime(
                 datetime.strptime(date_str, "%d-%B-%Y"), "%Y%m%d"
@@ -214,7 +215,7 @@ class BigCty(collections.abc.Mapping):
                     dl_url = f"http://www.country-files.com/bigcty/download/bigcty-{update_date}.zip"
                     the_request = session.get(dl_url)
                     if the_request.status_code != 200:
-                        raise Exception(
+                        raise ResourceWarning(
                             f"Unable to find and download bigcty-{update_date}.zip"
                         )
                 with open(path / "cty.zip", "wb+") as file:
