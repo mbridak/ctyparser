@@ -95,7 +95,7 @@ class BigCty(collections.abc.Mapping):
         """
         dat_file = pathlib.Path(dat_file)
         with dat_file.open("r", encoding="utf-8") as file:
-            cty_dict = dict()
+            cty_dict = {}
 
             # get the version from the file
             ver_match = re.search(self.regex_version_entry, file.read())
