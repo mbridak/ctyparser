@@ -212,7 +212,12 @@ class BigCty(collections.abc.Mapping):
                 path = pathlib.PurePath(temp)
                 page = session.get(update_url)
                 tree = html.fromstring(page.content)
-                dl_url = tree.xpath("//a[contains(@href,'zip')]/@href")[0]
+                urls = tree.xpath("//a[contains(@href,'zip')]/@href")
+                if len(urls) == 0:
+                    raise ResourceWarning(
+                        f"Unable to find and download bigcty-{update_date}.zip"
+                    )
+                dl_url = urls[0]
                 the_request = session.get(dl_url)
                 if the_request.status_code == 404:
                     dl_url = (
