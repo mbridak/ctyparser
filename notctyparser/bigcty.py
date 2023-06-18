@@ -10,6 +10,7 @@ Released under the terms of the MIT license.
 import collections
 import copy
 import json
+import locale
 import os
 import pathlib
 import re
@@ -54,6 +55,7 @@ class BigCty(collections.abc.Mapping):
     )
 
     def __init__(self, file_path: Union[str, os.PathLike, None] = None):
+        locale.setlocale(locale.LC_ALL, "en_US")
         self._data: dict = {}
         self._version = ""
 
