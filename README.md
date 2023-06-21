@@ -24,7 +24,7 @@ I just added a stupid check for update without doing the update.
 def check_update(self) -> bool:
 ```
 
-- Changed locale to en_US.
+- Changed locale to en_US.utf8
 - Used xpath to parse the download link.
 - Chose more narrow raised exceptions.
 - Specified utf-8 file encoding.

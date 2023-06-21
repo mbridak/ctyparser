@@ -55,7 +55,7 @@ class BigCty(collections.abc.Mapping):
     )
 
     def __init__(self, file_path: Union[str, os.PathLike, None] = None):
-        locale.setlocale(locale.LC_ALL, "en_US")
+        locale.setlocale(locale.LC_ALL, "en_US.utf8")
         self._data: dict = {}
         self._version = ""
 
