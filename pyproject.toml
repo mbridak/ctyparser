@@ -7,7 +7,7 @@ name = "notctyparser"
 version = "23.6.21"
 description = "Just ctyparser with added version check."
 readme = "README.md"
-requires-python = ">=3.9"
+requires-python = ">=3.10"
 authors = [
   { name="Michael Bridak", email="michael.bridak@gmail.com" },
 ]
