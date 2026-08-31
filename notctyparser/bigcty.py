@@ -6,7 +6,6 @@ Copyright 2019-2022 classabbyamp, 0x5c
 Released under the terms of the MIT license.
 """
 
-
 import collections
 import copy
 import json
@@ -17,7 +16,6 @@ import re
 import tempfile
 import zipfile
 from datetime import datetime
-from typing import Union
 
 import feedparser
 import requests
@@ -51,10 +49,10 @@ class BigCty(collections.abc.Mapping):
                                  )?
                                  (?:\{(?P<continent>\w+)\})?
                                  (?:~(?P<tz>[+-]?\d+(?:\.\d+)?)~)?""",
-        re.X,
+        re.VERBOSE,
     )
 
-    def __init__(self, file_path: Union[str, os.PathLike, None] = None):
+    def __init__(self, file_path: str | os.PathLike | None = None):
         locale.setlocale(locale.LC_ALL, "en_US.utf8")
         self._data: dict = {}
         self._version = ""
@@ -62,7 +60,7 @@ class BigCty(collections.abc.Mapping):
         if file_path is not None:
             self.load(file_path)
 
-    def load(self, cty_file: Union[str, os.PathLike]) -> None:
+    def load(self, cty_file: str | os.PathLike) -> None:
         """Loads a ``cty.json`` file into the instance.
 
         :param cty_file: Path to the file to load.
@@ -75,7 +73,7 @@ class BigCty(collections.abc.Mapping):
             self._version = ctyjson.pop("version", None)
             self._data = ctyjson
 
-    def dump(self, cty_file: Union[str, os.PathLike]) -> None:
+    def dump(self, cty_file: str | os.PathLike) -> None:
         """Dumps the data of the instance to a ``cty.json`` file.
 
         :param cty_file: Path to the file to dump to.
@@ -88,7 +86,7 @@ class BigCty(collections.abc.Mapping):
         with cty_file.open("w", encoding="utf-8") as file:
             json.dump(datadump, file)
 
-    def import_dat(self, dat_file: Union[str, os.PathLike]) -> None:
+    def import_dat(self, dat_file: str | os.PathLike) -> None:
         """Imports CTY data from a ``CTY.DAT`` file.
 
         :param dat_file: Path to the file to import.
@@ -180,12 +178,10 @@ class BigCty(collections.abc.Mapping):
                 raise AttributeError("Error parsing feed: date missing")
             date_str = date_match.group(1).title()
             update_date = datetime.strftime(
-                datetime.strptime(date_str, "%d-%B-%Y"), "%Y%m%d"
+                datetime.strptime(date_str, "%d-%B-%Y").astimezone(), "%Y%m%d"
             )
 
-            if self._version == update_date:
-                return False
-            return True
+            return self._version == update_date
 
     def update(self) -> bool:
         """Upates the instance's data from the feed.
@@ -204,7 +200,7 @@ class BigCty(collections.abc.Mapping):
                 raise AttributeError("Error parsing feed: date missing")
             date_str = date_match.group(1).title()
             update_date = datetime.strftime(
-                datetime.strptime(date_str, "%d-%B-%Y"), "%Y%m%d"
+                datetime.strptime(date_str, "%d-%B-%Y").astimezone(), "%Y%m%d"
             )
 
             if self._version == update_date:
@@ -247,7 +243,11 @@ class BigCty(collections.abc.Mapping):
         :type: str
         """
         try:
-            return datetime.strptime(self._version, "%Y%m%d").strftime("%Y-%m-%d")
+            return (
+                datetime.strptime(self._version, "%Y%m%d")
+                .astimezone()
+                .strftime("%Y-%m-%d")
+            )
         except ValueError:
             return "0000-00-00"
 
