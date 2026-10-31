@@ -31,5 +31,5 @@ classifiers = [
 "Homepage" = "https://github.com/mbridak/ctyparser"
 "Bug Tracker" = "https://github.com/mbridak/ctyparser/issues"
 
-[tool.setuptools.packages.find]
-where = ["."]
+[tool.setuptools]
+packages = ["notctyparser"]
